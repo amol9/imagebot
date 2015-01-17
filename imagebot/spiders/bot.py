@@ -2,15 +2,16 @@ import scrapy
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from scrapy.http import Request
-from os.path import join as joinpath, exists
-from os import mkdir
-from multiprocessing import Process
+from os.path import join as joinpath, exists, expanduser, realpath, dirname
+from os import mkdir, makedirs
+from multiprocessing import Process, Pipe
 from scrapy import log
 import re
 
 from imagebot.items import ImageItem
 import imagebot.settings as settings
 from imagebot.monitor import Monitor
+from imagebot.dbmanager import DBManager
 
 
 class ImageSpider(CrawlSpider):
@@ -25,6 +26,10 @@ class ImageSpider(CrawlSpider):
 
 	def __init__(self, **kwargs):
 		self._jobname = 'default'
+		self._inpipe = None
+		
+		self.setup_dirs()
+		self.setup_db()
 
 		start_url = kwargs.get('start_url', None)
 		if start_url:
@@ -58,7 +63,8 @@ class ImageSpider(CrawlSpider):
 			ImageSpider.rules = (Rule(LinkExtractor(allow=(stay_under + '.*', )), callback='parse_item', follow=True),)
 
 		if kwargs['monitor']:
-			mon = Monitor(self._jobname)
+			self._inpipe, outpipe = Pipe()
+			mon = Monitor(self._jobname, outpipe)
 			monitor = Process(target=mon.start)
 			monitor.start()
 
@@ -71,8 +77,34 @@ class ImageSpider(CrawlSpider):
 		if kwargs['no_cache']:
 			settings.HTTPCACHE_ENABLED = False
 
+
 		super(ImageSpider, self).__init__(**kwargs)
 
+	
+	def setup_dirs(self):
+		def create_dir(path):
+			if not exists(path):
+				makedirs(path)
+
+		settings.IMAGES_STORE = expanduser(settings.IMAGES_STORE)
+		create_dir(settings.IMAGES_STORE)
+		settings.IMAGES_STORE_FINAL = expanduser(settings.IMAGES_STORE_FINAL)	
+		create_dir(settings.IMAGES_STORE_FINAL)
+		settings.HTTPCACHE_DIR = expanduser(settings.HTTPCACHE_DIR)
+		create_dir(settings.HTTPCACHE_DIR)
+
+	
+	def setup_db(self):
+		settings.IMAGES_DB = expanduser(settings.IMAGES_DB)
+
+		db = DBManager(settings.IMAGES_DB)
+		db.connect()
+		schema_script = None
+		with open(joinpath(dirname(realpath(__file__)).rsplit('/', 1)[0], 'tables.sql'), 'r') as f:
+			schema_script = f.read()
+		db.executescript(schema_script)
+		db.disconnect()
+		
 	
 	def parse_start_url(self, response):
 		return self.parse_item(response)
@@ -156,5 +188,9 @@ class ImageSpider(CrawlSpider):
 	def get_jobname(self):
 		return self._jobname
 
+
+	def update_monitor(self, image_path):
+		if self._inpipe is not None:
+			self._inpipe.send(image_path)	
 
 	jobname = property(get_jobname)

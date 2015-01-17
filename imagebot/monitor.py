@@ -18,7 +18,7 @@ GObject.signal_new('change_image', Gtk.Window, GObject.SIGNAL_RUN_FIRST, GObject
 
 class MyWindow(Gtk.Window):
 
-	def __init__(self, jobname, title='imagebot'):
+	def __init__(self, jobname, outpipe, title='imagebot'):
 		Gtk.Window.__init__(self, title=title)
 		Gtk.Window.set_default_size(self, 800, 600)
 
@@ -30,6 +30,8 @@ class MyWindow(Gtk.Window):
 		self.db.connect()
 		self.rowid = 0
 		self.query = "SELECT max(rowid), path FROM images WHERE job = '%s'"%jobname
+
+		self._outpipe = outpipe
 		
 
 	def on_key_pressed(self, event, data):
@@ -51,13 +53,18 @@ class MyWindow(Gtk.Window):
 
 
 	def update_image(self):
-		result = self.db.query(self.query)
+		'''result = self.db.query(self.query)
 		if len(result) == 0 or result[0][0] == None or self.rowid == result[0][0]:
 			return True
 
 		self.rowid = result[0][0]
 		print 'rowid:', result[0][0], 'path:', result[0][1]
-		self.set_image(result[0][1])
+		self.set_image(result[0][1])'''
+
+		image_path = None
+		if self._outpipe.poll():
+			image_path = self._outpipe.recv()
+			self.set_image(image_path)
 		
 		sleep(0.2)
 		return True
@@ -120,12 +127,13 @@ class MyWindow(Gtk.Window):
 
 
 class Monitor():
-	def __init__(self, jobname):
+	def __init__(self, jobname, outpipe):
 		self._jobname = jobname
+		self._outpipe = outpipe
 
 
 	def start(self):
-		win = MyWindow(self._jobname)
+		win = MyWindow(self._jobname, self._outpipe)
 		win.connect("delete-event", Gtk.main_quit)
 
 		#GObject.threads_init()

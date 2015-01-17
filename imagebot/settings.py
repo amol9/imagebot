@@ -7,8 +7,10 @@
 #
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #
+from os.path import join as joinpath
 
 BOT_NAME = 'imagebot'
+DATA_DIR = '.imagebot'
 
 SPIDER_MODULES = ['imagebot.spiders']
 NEWSPIDER_MODULE = 'imagebot.spiders'
@@ -21,9 +23,9 @@ ITEM_PIPELINES = {
 	'imagebot.pipelines.ImageStorePipeline': 2
 }
 
-IMAGES_STORE = '/home/amol/projects/imagebot/data'
-IMAGES_STORE_FINAL = '/home/amol/Pictures/crawled'
-IMAGES_DB = 'images.db'
+IMAGES_STORE = joinpath('~', DATA_DIR, 'data')
+IMAGES_STORE_FINAL = '~/Pictures/crawled'
+IMAGES_DB = joinpath('~', DATA_DIR, 'images.db')
 
 IMAGES_MIN_HEIGHT = 300
 IMAGES_MIN_WIDTH = 300
@@ -36,7 +38,8 @@ DOWNLOADER_MIDDLEWARES = {
 LOG_ENABLED = True
 
 
-HTTPCACHE_ENABLED = False
+HTTPCACHE_ENABLED = True
 HTTPCACHE_POLICY = 'scrapy.contrib.httpcache.RFC2616Policy'
+HTTPCACHE_DIR = joinpath('~', DATA_DIR, 'httpcache')
 
 #DEPTH_LIMIT = 1

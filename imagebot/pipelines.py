@@ -52,6 +52,7 @@ class ImageStorePipeline(object):
 					try:
 						os.rename(joinpath(settings.IMAGES_STORE, d['path']), final_path)
 						log.msg('moved to: ' + final_path, log.DEBUG)
+						spider.update_monitor(final_path)
 						if not self._nodb:
 							self._dbm.insert('images', (d['url'], final_path, spider.jobname, int(time())))
 					except OSError as e:
