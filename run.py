@@ -19,6 +19,7 @@ def parse_arguments():
 	argparser.add_argument('-l', '--log-level', choices=['critical', 'error', 'warning', 'info', 'debug'], default='error',
 				help='logging level')
 	argparser.add_argument('-m', '--monitor', action='store_true', help='monitor crawled images in a window')
+	argparser.add_argument('-nc', '--no-cache', action='store_true', help='disable caching')
 	argparser.add_argument('start_url', help='start url')
 
 	args = argparser.parse_args()
@@ -29,8 +30,8 @@ def parse_arguments():
 
 
 def start_spider(args):
-	spider = ImageSpider(domains=args.domains, start_url=args.start_url, jobname=args.jobname,
-				stay_under=args.stay_under, monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size)
+	spider = ImageSpider(domains=args.domains, start_url=args.start_url, jobname=args.jobname, stay_under=args.stay_under,
+				monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache)
 
 	settings = get_project_settings()
 	crawler = Crawler(settings)
@@ -45,5 +46,6 @@ def start_spider(args):
 
 
 if __name__ == '__main__':
+	#import pdb; pdb.set_trace()
 	args = parse_arguments()
 	start_spider(args)

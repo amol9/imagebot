@@ -1,10 +1,12 @@
 import scrapy
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
+from scrapy.http import Request
 from os.path import join as joinpath, exists
 from os import mkdir
 from multiprocessing import Process
 from scrapy import log
+import re
 
 from imagebot.items import ImageItem
 import imagebot.settings as settings
@@ -65,6 +67,9 @@ class ImageSpider(CrawlSpider):
 
 		if kwargs['minsize']:
 			settings.IMAGES_MIN_WIDTH, settings.IMAGES_MIN_HEIGHT = kwargs['minsize']
+	
+		if kwargs['no_cache']:
+			settings.HTTPCACHE_ENABLED = False
 
 		super(ImageSpider, self).__init__(**kwargs)
 
@@ -76,29 +81,76 @@ class ImageSpider(CrawlSpider):
 	def parse_item(self, response):
 		item = ImageItem()
 		urls = []
+		
+		if not response.meta.get('js_link'):
+			imgs = response.xpath('set:difference(//img, //a/img)')
+		else:
+			imgs = response.xpath('//img')
 
-		for img in response.xpath('set:difference(//img, //a/img)'):
+		for img in imgs:
 			url = img.xpath('@src').extract()
 			urls.extend(url)
 
 		for i in range(len(urls)):
 			url = urls[i]
-			#remove duplicates
+			#remove duplicatesres
 			if url != '':
 				for j in range(i + 1, len(urls)):
 					if urls[j] == url:
 						urls[j] = ''
 
 			if url != '' and not url.startswith('http'):
-				url = response.url[0:response.url.rfind('/')+1] + url
-				urls[i] = url
+					url = self.make_abs_url(response.url, url)
+					urls[i] = url
 			else:
 				if not any([url.find(ad) != -1 for ad in ImageSpider.allowed_domains]):
 					urls[i] = ''
 
 		item['image_urls'] = [u for u in urls if u != '']
+		item['referer'] = response.url
 
-		return item
+		requests = self.parse_js_links(response)
+
+		return [item] + requests
+
+
+	def make_abs_url(self, page_url, rel_url):
+		abs_url = None
+		rfslash = page_url.rfind('/')
+		if rfslash < 8:
+			abs_url = page_url + '/' + rel_url
+		else:
+			abs_url = page_url[0:rfslash+1] + rel_url
+		return abs_url
+
+
+	def parse_js_links(self, response):
+		requests = []
+
+		jscall_regex = re.compile("\S+\((.*?)\)", re.M | re.S)
+		for a in response.xpath('//a'):
+			href = a.xpath('@href').extract()
+			if href is not None and len(href) > 0:
+				href = href[0]
+			else:
+				continue
+			if href.find('javascript') != -1:
+				onclick = a.xpath('@onclick').extract()
+				if onclick is not  None and len(onclick) > 0:
+					onclick = onclick[0]
+				else:
+					continue
+				matches = jscall_regex.findall(onclick)
+				if matches:
+					jscall = matches[0]
+					jscall_args = jscall.split(',')
+					url = jscall_args[0].strip('\'').strip('\"')
+					if url != '' and not url.startswith('http'):
+						url = self.make_abs_url(response.url, url)
+					requests.append(Request(url, meta={'js_link': True}, headers={'Referer': response.url}))
+					log.msg('adding js url: %s'%url, log.DEBUG)
+
+		return requests
 
 	
 	def get_jobname(self):

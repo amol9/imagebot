@@ -4,17 +4,21 @@ import os
 from os.path import join as joinpath, exists
 import pickle
 import sys
-from scrapy import log
+from scrapy import log, Request
 from time import time, sleep
+from scrapy.contrib.pipeline.images import ImagesPipeline
 
 from imagebot.items import ImageItem
 import imagebot.settings as settings
 from imagebot.dbmanager import DBManager
 
 
-class ImagePipeline(object):
-	def process_item(self, item, spider):
-		return item
+#referermiddleware is a spider middleware, for requests generated from image pipeline, it does not set the referer
+#so, we set it here
+class ImagesRefererPipeline(ImagesPipeline):
+	def get_media_requests(self, item, info):
+		for image_url in item['image_urls']:
+			yield Request(image_url, headers={'Referer': item['referer']})
 
 
 class ImageStorePipeline(object):

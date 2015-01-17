@@ -3,6 +3,7 @@ from scrapy.exceptions import IgnoreRequest
 import anydbm
 from os.path import exists
 import pickle
+from scrapy import log
 
 import imagebot.settings as settings
 from imagebot.dbmanager import DBManager
@@ -39,3 +40,12 @@ class ImageStoreMiddleware(object):
 		self._db.disconnect()	
 
 
+class DebugMiddleware(object):
+	def process_request(self, request, spider):
+		urls = ['http://www.kstewartfan.org/gallery/albums/Screen%20Captures/Interviews/121808_Commeaucinema/Comme0037.jpg']
+		if request.url in urls or True:
+			log.msg('reqdump-start', log.DEBUG)
+			log.msg('url: %s'%request.url, log.DEBUG)
+			log.msg(str(request.headers), log.DEBUG)
+			log.msg('reqdump-end', log.DEBUG)
+		return None
