@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
-
-# Scrapy settings for image project
-#
-# For simplicity, this file contains only the most important settings by
-# default. All the other settings are documented here:
-#
-#     http://doc.scrapy.org/en/latest/topics/settings.html
-#
 from os.path import join as joinpath
+
 
 BOT_NAME = 'imagebot'
 DATA_DIR = '.imagebot'
@@ -31,8 +24,8 @@ IMAGES_MIN_HEIGHT = 300
 IMAGES_MIN_WIDTH = 300
 
 DOWNLOADER_MIDDLEWARES = {
-	'imagebot.middleware.ImageStoreMiddleware': 0,
-	'imagebot.middleware.DebugMiddleware': 5000
+	'imagebot.middleware.ImageStoreMiddleware': 0
+#	'imagebot.middleware.DebugMiddleware': 5000
 }
 
 LOG_ENABLED = True

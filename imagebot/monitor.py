@@ -47,20 +47,10 @@ class MyWindow(Gtk.Window):
 
 
 	def on_change_image(self, event, data):
-		#print 'change image:', data
-		#GLib.idle_add(self.set_image, data)
 		pass
 
 
 	def update_image(self):
-		'''result = self.db.query(self.query)
-		if len(result) == 0 or result[0][0] == None or self.rowid == result[0][0]:
-			return True
-
-		self.rowid = result[0][0]
-		print 'rowid:', result[0][0], 'path:', result[0][1]
-		self.set_image(result[0][1])'''
-
 		image_path = None
 		if self._outpipe.poll():
 			image_path = self._outpipe.recv()
@@ -94,10 +84,6 @@ class MyWindow(Gtk.Window):
 
 		self.image.show_all()
 
-		#while Gtk.events_pending():
-			#Gtk.main_iteration_do(True)
-		#self.image.queue_draw()
-		#self.queue_draw()
 
 	def next_image(self):
 		if (self.currentFile < len(self.jpgList) - 1):
@@ -136,51 +122,10 @@ class Monitor():
 		win = MyWindow(self._jobname, self._outpipe)
 		win.connect("delete-event", Gtk.main_quit)
 
-		#GObject.threads_init()
-		#th = Thread(target=Monitor.run, args=(self, win))
-		#th.daemon = True
-		#th.start()
-		#win.set_image("/home/amol/Pictures/wallp_debug.jpg")
-		#win.emit('change_image', "123450")
-		#GObject.signal_emit(win, 'change_image', None, "1234gobject")
-	
 		win.show_all()
 		GLib.idle_add(win.update_image)
 		Gtk.main()
-		print 'gtk ended..'
-		#th.join()
-
-
-	def run(self, window):
-		db = DBManager(settings.IMAGES_DB)
-		db.connect()
-
-		print 'jobname:', self._jobname, self._loop
-		rowid = 0
-		query = "SELECT max(rowid), path FROM images WHERE job = '%s'"%self._jobname
-
-		loop = True
-		while self._loop:
-			try:
-				sleep(1)
-				print 'in the loop'
-				result = db.query(query)
-				if len(result) == 0 or result[0][0] == rowid:
-					continue
-					
-				rowid = result[0][0]
-				print 'image:', rowid
-				#GLib.idle_add(window.set_image, result[0][1])
-				event = Event()
-				GObject.idle_add(window.set_image, "/home/amol/Pictures/wallp_debug.jpg", event)
-				event.wait()
-				#window.emit("change_image", result[0][1])
-				loop = False
-			except KeyboardInterrupt:
-				print 'quitting...'
-				loop = False
-
-		db.disconnect()			
+		#print 'gtk ended..'
 
 
 #== main program ===============>

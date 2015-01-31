@@ -1,4 +1,3 @@
-#from scrapy.contrib.downloadermiddleware import DownloaderMiddleware
 from scrapy.exceptions import IgnoreRequest
 import anydbm
 from os.path import exists
@@ -42,7 +41,6 @@ class ImageStoreMiddleware(object):
 
 class DebugMiddleware(object):
 	def process_request(self, request, spider):
-		urls = ['http://www.kstewartfan.org/gallery/albums/Screen%20Captures/Interviews/121808_Commeaucinema/Comme0037.jpg']
 		if request.url in urls or True:
 			log.msg('reqdump-start', log.DEBUG)
 			log.msg('url: %s'%request.url, log.DEBUG)

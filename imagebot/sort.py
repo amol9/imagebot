@@ -40,7 +40,7 @@ for r in result:
 db.disconnect()
 
 
-class SortManager():
+'''class SortManager():
 	def __init__(self):
 		pass
 
@@ -93,5 +93,5 @@ class SortManager():
 
 
 if __name__ == '__main__':
-	#intelligent / parts
+	#intelligent / parts'''
 	
