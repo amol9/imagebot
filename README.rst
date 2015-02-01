@@ -7,11 +7,12 @@ A web bot to scrape images from websites.
 Features
 ========
 
-* Supported platform: Linux / Python 2.x.
+* Supported platform: Linux (+Gnome) / Python 2.x.
 * Uses scrapy web crawling framework.
 * Maintains a database of all downloaded images to avoid duplicate downloads.
 * Optionally, it can scrape only under a particular url, e.g. scraping "http://website.com/albums/new" with this option will only download from new album.
 * You can specify minimum image size to be downloaded.
+* Scrapes through javascript popup links.
 * Live monitor window for displaying images as they are scraped.
 
 Usage
@@ -43,7 +44,7 @@ Usage
 
 #. For more options, get help::
 
-	wallp -h
+	imagebot -h
 
 Dependencies
 ============

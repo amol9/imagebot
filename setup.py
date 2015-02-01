@@ -16,7 +16,7 @@ entry_points = {}
 entry_points['console_scripts'] = ['imagebot=imagebot.main:main']
 
 setup(	name='imagebot',
-	version='1.0.1',
+	version='1.0.2',
 	description='A web bot to scrape images from websites.',
 	author='Amol Umrale',
 	author_email='babaiscool@gmail.com',
