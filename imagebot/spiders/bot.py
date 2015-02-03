@@ -10,7 +10,15 @@ import re
 
 from imagebot.items import ImageItem
 import imagebot.settings as settings
-from imagebot.monitor import Monitor
+
+no_gtk = True
+try:
+	from gi.repository import Gtk
+	from imagebot.monitor import Monitor
+	no_gtk = False
+except ImportError:
+	pass
+		
 from imagebot.dbmanager import DBManager
 
 
@@ -27,28 +35,39 @@ class ImageSpider(CrawlSpider):
 	def __init__(self, **kwargs):
 		self._jobname = 'default'
 		self._inpipe = None
+
+		images_store = kwargs.get('images_store')
+		if images_store is not None:
+			settings.IMAGES_STORE_FINAL = images_store
 		
 		self.setup_dirs()
 		self.setup_db()
 
-		start_url = kwargs.get('start_url', None)
-		if start_url:
-			if not start_url.startswith('http'):
+		start_urls = kwargs.get('start_urls', None)
+		if start_urls:
+			urls = [u.strip() for u in start_urls.split(',') if len(u.strip()) > 0]
+			
+			if any([not u.startswith('http') for u in urls]):
 				log.msg('missing url scheme, (http/https)?', log.ERROR)
 				return
 
-			ImageSpider.start_urls = [start_url]
-			ImageSpider.allowed_domains = [start_url.split('/')[2]]
+			kwargs['start_urls'] = urls
+			log.msg('start urls: \n' + '\n'.join(urls), log.DEBUG)
+
+			allowed_domains = list(set([u.split('/')[2] for u in urls]))
+			kwargs['allowed_domains'] = allowed_domains
 		else:
-			log.msg('must provide start url', log.ERROR)
+			log.msg('must provide start url(s)', log.ERROR)
 			return
 
 		domains = kwargs.get('domains', None)
 		if domains:
 			domains = [d.strip() for d in domains.split(',')]
-			ImageSpider.allowed_domains.extend(domains)
+			kwargs['allowed_domains'].extend(domains)
+		
+		log.msg('allowed domains: \n' + ', '.join(kwargs['allowed_domains']), log.DEBUG)
 
-		self._jobname = ImageSpider.allowed_domains[0]
+		self._jobname = kwargs['allowed_domains'][0]
 
 		jobname = kwargs.get('jobname', None)
 		if jobname:
@@ -60,13 +79,17 @@ class ImageSpider(CrawlSpider):
 
 		stay_under = kwargs.get('stay_under', None)
 		if stay_under:
-			ImageSpider.rules = (Rule(LinkExtractor(allow=(stay_under + '.*', )), callback='parse_item', follow=True),)
+			ImageSpider.rules = (Rule(LinkExtractor(allow=(start_urls + '.*', )), callback='parse_item', follow=True),)
+			log.msg('staying under: %s'%start_urls, log.DEBUG)
 
 		if kwargs['monitor']:
-			self._inpipe, outpipe = Pipe()
-			mon = Monitor(self._jobname, outpipe)
-			monitor = Process(target=mon.start)
-			monitor.start()
+			if not no_gtk:
+				self._inpipe, outpipe = Pipe()
+				mon = Monitor(self._jobname, outpipe)
+				monitor = Process(target=mon.start)
+				monitor.start()
+			else:
+				log.msg('gtk / python-gi not found, will not start monitor ui', log.ERROR)
 
 		if kwargs['user_agent']:
 			settings.USER_AGENT = kwargs['user_agent']

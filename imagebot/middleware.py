@@ -1,5 +1,4 @@
 from scrapy.exceptions import IgnoreRequest
-import anydbm
 from os.path import exists
 import pickle
 from scrapy import log

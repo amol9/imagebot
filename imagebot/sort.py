@@ -1,7 +1,12 @@
-from dbmanager import DBManager
+from imagebot.system import *
+if is_py3():
+	from urllib.parse import unquote
+else:
+	from urllib import unquote
 import sys
 from os.path import join as joinpath
-from urllib import unquote
+
+from imagebot.dbmanager import DBManager
 
 
 sort_parts = [1, 2, 3]
@@ -33,9 +38,9 @@ for r in result:
 				path = joinpath(path, url_parts[i])
 
 	path = unquote(path).replace(' ', '_')
-	print url
-	print path
-	print '-'
+	print(url)
+	print(path)
+	print('-')
 
 db.disconnect()
 

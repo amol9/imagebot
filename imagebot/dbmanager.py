@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import OperationalError, IntegrityError
-import pprint
+
 
 class DBManager():
 	
@@ -18,7 +18,7 @@ class DBManager():
 			success = True
 			self.conn.row_factory = sqlite3.Row
 		except:
-			print 'error connecting to db'
+			print('error connecting to db')
 
 		return success
 
@@ -33,8 +33,8 @@ class DBManager():
 		try:
 			c = self.conn.cursor()
 			r = c.execute(query_string)
-		except OperationalError, oe:
-			print 'Error: ', oe.message
+		except OperationalError as oe:
+			print('Error: ', oe.message)
 		return c.fetchall()
 
 
@@ -48,10 +48,10 @@ class DBManager():
 				param_string += ',?'
 			
 			r = c.execute('INSERT INTO ' + tablename + ' VALUES (' + param_string + ')', values)
-		except OperationalError, oe:
-			print 'Error: ', oe.message	
-		except IntegrityError, ie:
-			print 'x',
+		except OperationalError as oe:
+			print('Error: %s'%oe.message)	
+		except IntegrityError as ie:
+			print('Error: %s'%ie.message)
 		return 
 
 
@@ -61,29 +61,35 @@ class DBManager():
 
 			query = 'UPDATE ' + tablename + ' SET '
 			cols = 0
-			for col, _ in values.items():
+			for col, _ in list(values.items()):
 				query += ', ' if cols > 0 else ''
 				query += col + ' = ?'
 				cols += 1
 			query += ' WHERE ' + cond if cond != None else ''
-			r = c.execute(query, values.values())
-		except OperationalError, oe:
-			print 'Error: ', oe.message
+			r = c.execute(query, list(values.values()))
+		except OperationalError as oe:
+			print('Error: ', oe.message)
 		return
 
 	
 	def delete(self, tablename, cond):
-		return
+		r = None
+		try:
+			c = self.conn.cursor()
+			r = c.execute('DELETE FROM %s %s'%(tablename, ('WHERE %s'%cond if cond is not None else '')))
+		except OperationalError as oe:
+			print('Error: ', oe.message)
+		return r.rowcount
 
 
 	def execute(self, query):
 		try:
 			c = self.conn.cursor()
 			r = c.execute(query)
-		except OperationalError, oe:
-			print 'Error: ', oe.message
-		except IntegrityError, ie:
-			print 'Error: ', ie.message
+		except OperationalError as oe:
+			print('Error: ', oe.message)
+		except IntegrityError as ie:
+			print('Error: ', ie.message)
 			raise ie
 		self.commit()
 		return
@@ -93,10 +99,10 @@ class DBManager():
 		try:
 			c = self.conn.cursor()
 			r = c.executescript(script)
-		except OperationalError, oe:
-			print 'Error: ', oe.message
-		except IntegrityError, ie:
-			print 'Error: ', ie.message
+		except OperationalError as oe:
+			print('Error: ', oe.message)
+		except IntegrityError as ie:
+			print('Error: ', ie.message)
 		self.commit()
 		return
 
@@ -105,25 +111,7 @@ class DBManager():
 		try:
 			self.conn.commit()
 		except:
-			print 'Commit Error'
+			print('Commit Error')
 
 		return
 
-
-if __name__ == '__main__':
-	dbm = DBManager('../db/db1.sqlite')
-	dbm.connect()
-
-	try:
-		#vals = ('e11', 'Nick M', 'NY')
-		#pprint.pprint(vals)
-		#dbm.insert('Employee', vals)
-		dbm.update('Employee', {'name': 'ASAC Hank S', 'deleted': 1}, "id = \'e03\'")
-		dbm.commit()
-	except IntegrityError, ie:
-		print 'Insert error'
-	
-	for row in dbm.query('SELECT * FROM Employee'):
-		print row[1]
-		
-	dbm.disconnect()

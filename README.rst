@@ -7,7 +7,7 @@ A web bot to scrape images from websites.
 Features
 ========
 
-* Supported platform: Linux (+Gnome) / Python 2.x.
+* Supported platforms: Linux / Python 2.7.
 * Uses scrapy web crawling framework.
 * Maintains a database of all downloaded images to avoid duplicate downloads.
 * Optionally, it can scrape only under a particular url, e.g. scraping "http://website.com/albums/new" with this option will only download from new album.
@@ -18,38 +18,58 @@ Features
 Usage
 =====
 
-#. Scrape images from http://website.com::
+**crawl commands:**
 
-	imagebot http://website.com
+* Scrape images from http://website.com::
 
-#. Scrape images from http://website.com while allowing images from a cdn such as amazonaws.com (add multiple domains with comma separated list)::
+	imagebot crawl http://website.com
 
-	imagebot http://website.com -d amazonaws.com
+* Scrape images from http://website.com while allowing images from a cdn such as amazonaws.com (add multiple domains with comma separated list)::
 
-#. Specify minimum size of image to be downloaded (width x height)::
+	imagebot crawl http://website.com -d amazonaws.com
 
-	imagebot http://website.com -s 300x300
+* Specify image store location::
 
-#. Stay under http://website.com/albums/new::
+	imagebot crawl http://website.com -is /home/images
 
-	imagebot http://website.com/albums/new -u http://website.com/albums/new
+* Specify minimum size of image to be downloaded (width x height)::
 
-#. Launch monitor windows for live images::
+	imagebot crawl http://website.com -s 300x300
 
-	imagebot http://website.com -m
+* Stay under http://website.com/albums/new::
 
-#. Set user-agent::
+	imagebot crawl http://website.com/albums/new -u
 
-	imagebot http://website.com -a "my_imagebot(http://mysite.com)"
+* Launch monitor windows for live images::
 
-#. For more options, get help::
+	imagebot crawl http://website.com -m
 
-	imagebot -h
+* Set user-agent::
+
+	imagebot crawl http://website.com -a "my_imagebot(http://mysite.com)"
+
+* For more options, get help::
+
+	imagebot crawl -h
+
+**clear commands:**
+
+* Clear cache::
+	
+	imagebot clear --cache
+
+* Remove image metadata from database::
+
+	imagebot clear --db website.com
+
+* Get help::
+
+	imagebot clear -h
 
 Dependencies
 ============
 
-#. python-gi (Python GObject Introspection API)
+#. python-gi (Python GObject Introspection API) (if using monitor UI)
 
 	On Ubuntu::
 	

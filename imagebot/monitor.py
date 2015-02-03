@@ -98,7 +98,7 @@ class MyWindow(Gtk.Window):
 
 
 	def delete_image(self):
-		print "trashing ", self.jpgList[self.currentFile], " to ", trashPath
+		print("trashing ", self.jpgList[self.currentFile], " to ", trashPath)
 		shutil.move(self.jpgList[self.currentFile], trashPath)
 
 	
@@ -133,7 +133,7 @@ class Monitor():
 if __name__ == '__main__':
 	argc = len(sys.argv)
 	if (argc < 2):
-		print "missing jobname"
+		print("missing jobname")
 		quit()
 
 	mon = Monitor(sys.argv[1])

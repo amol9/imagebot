@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import anydbm
 import os
 from os.path import join as joinpath, exists
 import pickle
@@ -100,5 +99,5 @@ class ImageStorePipeline(object):
 
 if __name__ == '__main__':
 	isp = ImageStorePipeline()
-	print isp.get_filename(sys.argv[1])
+	print(isp.get_filename(sys.argv[1]))
 	
