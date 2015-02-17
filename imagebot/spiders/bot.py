@@ -2,24 +2,12 @@ import scrapy
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from scrapy.http import Request
-from os.path import join as joinpath, exists, expanduser, realpath, dirname
-from os import mkdir, makedirs
-from multiprocessing import Process, Pipe
 from scrapy import log
 import re
 
 from imagebot.items import ImageItem
-import imagebot.settings as settings
-
-no_gtk = True
-try:
-	from gi.repository import Gtk
-	from imagebot.monitor import Monitor
-	no_gtk = False
-except ImportError:
-	pass
-		
-from imagebot.dbmanager import DBManager
+import imagebot.spiders.init as init
+from imagebot.common.web.urls import AbsUrl
 
 
 class ImageSpider(CrawlSpider):
@@ -33,154 +21,68 @@ class ImageSpider(CrawlSpider):
 
 
 	def __init__(self, **kwargs):
-		self._jobname = 'default'
-		self._inpipe = None
-
-		images_store = kwargs.get('images_store')
-		if images_store is not None:
-			settings.IMAGES_STORE_FINAL = images_store
-		
-		self.setup_dirs()
-		self.setup_db()
-
-		start_urls = kwargs.get('start_urls', None)
-		if start_urls:
-			urls = [u.strip() for u in start_urls.split(',') if len(u.strip()) > 0]
-			
-			if any([not u.startswith('http') for u in urls]):
-				log.msg('missing url scheme, (http/https)?', log.ERROR)
-				return
-
-			kwargs['start_urls'] = urls
-			log.msg('start urls: \n' + '\n'.join(urls), log.DEBUG)
-
-			allowed_domains = list(set([u.split('/')[2] for u in urls]))
-			kwargs['allowed_domains'] = allowed_domains
-		else:
-			log.msg('must provide start url(s)', log.ERROR)
-			return
-
-		domains = kwargs.get('domains', None)
-		if domains:
-			domains = [d.strip() for d in domains.split(',')]
-			kwargs['allowed_domains'].extend(domains)
-		
-		log.msg('allowed domains: \n' + ', '.join(kwargs['allowed_domains']), log.DEBUG)
-
-		self._jobname = kwargs['allowed_domains'][0]
-
-		jobname = kwargs.get('jobname', None)
-		if jobname:
-			self._jobname = jobname
-
-		final_storepath = joinpath(settings.IMAGES_STORE_FINAL, self._jobname)
-		if not exists(final_storepath):
-			mkdir(final_storepath)
-
-		stay_under = kwargs.get('stay_under', None)
-		if stay_under:
-			ImageSpider.rules = (Rule(LinkExtractor(allow=(start_urls + '.*', )), callback='parse_item', follow=True),)
-			log.msg('staying under: %s'%start_urls, log.DEBUG)
-
-		if kwargs['monitor']:
-			if not no_gtk:
-				self._inpipe, outpipe = Pipe()
-				mon = Monitor(self._jobname, outpipe)
-				monitor = Process(target=mon.start)
-				monitor.start()
-			else:
-				log.msg('gtk / python-gi not found, will not start monitor ui', log.ERROR)
-
-		if kwargs['user_agent']:
-			settings.USER_AGENT = kwargs['user_agent']
-
-		if kwargs['minsize']:
-			settings.IMAGES_MIN_WIDTH, settings.IMAGES_MIN_HEIGHT = kwargs['minsize']
-	
-		if kwargs['no_cache']:
-			settings.HTTPCACHE_ENABLED = False
-
+		init.process_kwargs(self, kwargs)
+		ImageSpider.allowed_domains = self.allowed_domains
 
 		super(ImageSpider, self).__init__(**kwargs)
-
 	
-	def setup_dirs(self):
-		def create_dir(path):
-			if not exists(path):
-				makedirs(path)
-
-		settings.IMAGES_STORE = expanduser(settings.IMAGES_STORE)
-		create_dir(settings.IMAGES_STORE)
-		settings.IMAGES_STORE_FINAL = expanduser(settings.IMAGES_STORE_FINAL)	
-		create_dir(settings.IMAGES_STORE_FINAL)
-		settings.HTTPCACHE_DIR = expanduser(settings.HTTPCACHE_DIR)
-		create_dir(settings.HTTPCACHE_DIR)
-
-	
-	def setup_db(self):
-		settings.IMAGES_DB = expanduser(settings.IMAGES_DB)
-
-		db = DBManager(settings.IMAGES_DB)
-		db.connect()
-		schema_script = None
-		with open(joinpath(dirname(realpath(__file__)).rsplit('/', 1)[0], 'tables.sql'), 'r') as f:
-			schema_script = f.read()
-		db.executescript(schema_script)
-		db.disconnect()
-		
 	
 	def parse_start_url(self, response):
 		return self.parse_item(response)
 		
 
 	def parse_item(self, response):
-		item = ImageItem()
-		urls = []
+		images = ImageItem()
+		image_urls = []
+		base_url = AbsUrl(response.url)
 		
-		if not response.meta.get('js_link'):
-			imgs = response.xpath('set:difference(//img, //a/img)')
-		else:
-			imgs = response.xpath('//img')
+
+		anchors = response.xpath('//a')
+
+		for anchor in anchors:
+			url = anchor.xpath('@href').extract()
+			if len(url) > 0:
+				ext = url[0][url[0].rfind('.'):]
+				if ext.lower() in self.image_extensions: 
+					image_urls.append(url[0])
+
+		imgs = response.xpath('//img')
 
 		for img in imgs:
 			url = img.xpath('@src').extract()
-			urls.extend(url)
+			if len(url) > 0:
+				image_urls.append(url[0])
+		
+		#remove duplicates
+		image_urls = list(set(image_urls))
 
-		for i in range(len(urls)):
-			url = urls[i]
-			#remove duplicatesres
-			if url != '':
-				for j in range(i + 1, len(urls)):
-					if urls[j] == url:
-						urls[j] = ''
+		for i in range(len(image_urls)):
+			url = image_urls[i]
 
-			if url != '' and not url.startswith('http'):
-					url = self.make_abs_url(response.url, url)
-					urls[i] = url
+			if not url.startswith('http') and not url.startswith('//'):
+					image_urls[i] = base_url.extend(url)
+					log.msg('abs url: %s'%url, log.DEBUG)
 			else:
-				if not any([url.find(ad) != -1 for ad in ImageSpider.allowed_domains]):
-					urls[i] = ''
+				if url.startswith('//'):
+					url = base_url.extend(url)
 
-		item['image_urls'] = [u for u in urls if u != '']
-		item['referer'] = response.url
+				if not any([(AbsUrl(url).domain == ad) for ad in self.allowed_image_domains]):
+					image_urls[i] = ''
+					log.msg('blocked image url: %s'%url, log.DEBUG)
+				else:
+					image_urls[i] = url
+
+		images['image_urls'] = [url for url in image_urls if url != '']
+		images['referer'] = response.url
 
 		requests = self.parse_js_links(response)
 
-		return [item] + requests
-
-
-	def make_abs_url(self, page_url, rel_url):
-		abs_url = None
-		rfslash = page_url.rfind('/')
-		if rfslash < 8:
-			abs_url = page_url + '/' + rel_url
-		else:
-			abs_url = page_url[0:rfslash+1] + rel_url
-		return abs_url
+		return [images] + requests
 
 
 	def parse_js_links(self, response):
 		requests = []
+		base_url = AbsUrl(response.url)
 
 		jscall_regex = re.compile("\S+\((.*?)\)", re.M | re.S)
 		for a in response.xpath('//a'):
@@ -200,8 +102,11 @@ class ImageSpider(CrawlSpider):
 					jscall = matches[0]
 					jscall_args = jscall.split(',')
 					url = jscall_args[0].strip('\'').strip('\"')
-					if url != '' and not url.startswith('http'):
-						url = self.make_abs_url(response.url, url)
+
+					if url == '':
+						continue						
+					if not url.startswith('http'):
+						url = base_url.extend(url)
 					requests.append(Request(url, meta={'js_link': True}, headers={'Referer': response.url}))
 					log.msg('adding js url: %s'%url, log.DEBUG)
 
@@ -215,5 +120,6 @@ class ImageSpider(CrawlSpider):
 	def update_monitor(self, image_path):
 		if self._inpipe is not None:
 			self._inpipe.send(image_path)	
+
 
 	jobname = property(get_jobname)

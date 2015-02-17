@@ -40,9 +40,8 @@ class ImageStoreMiddleware(object):
 
 class DebugMiddleware(object):
 	def process_request(self, request, spider):
-		if request.url in urls or True:
-			log.msg('reqdump-start', log.DEBUG)
-			log.msg('url: %s'%request.url, log.DEBUG)
-			log.msg(str(request.headers), log.DEBUG)
-			log.msg('reqdump-end', log.DEBUG)
+		log.msg('reqdump-start', log.DEBUG)
+		log.msg('url: %s'%request.url, log.DEBUG)
+		log.msg(str(request.headers), log.DEBUG)
+		log.msg('reqdump-end', log.DEBUG)
 		return None

@@ -24,8 +24,8 @@ IMAGES_MIN_HEIGHT = 300
 IMAGES_MIN_WIDTH = 300
 
 DOWNLOADER_MIDDLEWARES = {
-	'imagebot.middleware.ImageStoreMiddleware': 0
-#	'imagebot.middleware.DebugMiddleware': 5000
+	'imagebot.middleware.ImageStoreMiddleware': 0,
+	'imagebot.middleware.DebugMiddleware': 5000
 }
 
 LOG_ENABLED = True
@@ -35,4 +35,4 @@ HTTPCACHE_ENABLED = True
 HTTPCACHE_POLICY = 'scrapy.contrib.httpcache.RFC2616Policy'
 HTTPCACHE_DIR = joinpath('~', DATA_DIR, 'httpcache')
 
-#DEPTH_LIMIT = 1
+DEPTH_LIMIT = 0

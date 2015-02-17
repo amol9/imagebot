@@ -23,11 +23,14 @@ def parse_arguments():
 	crawl_parser.add_argument('-u', '--stay-under', action='store_true', help='stay under a url')
 	crawl_parser.add_argument('-a', '--user-agent', help='user agent string')
 	crawl_parser.add_argument('-s', '--min-size', help='minimum image size, WIDTHxHEIGHT')
+	crawl_parser.add_argument('-r', '--url-regex', help='regex filter for urls to be followed')
 	crawl_parser.add_argument('-is', '--images-store', help='image store location, default: %s'%settings.IMAGES_STORE_FINAL)
+	crawl_parser.add_argument('-dl', '--depth-limit', help='depth limit, default: no limit')
 	crawl_parser.add_argument('-l', '--log-level', choices=list(log_level_lookup.keys()), default='error',
 					help='logging level')
 	crawl_parser.add_argument('-m', '--monitor', action='store_true', help='monitor crawled images in a window')
 	crawl_parser.add_argument('-nc', '--no-cache', action='store_true', help='disable caching')
+	crawl_parser.add_argument('--no-cdns', action='store_true', help='disallow default cdns')
 	crawl_parser.add_argument('start_urls', help='start url(s)')
 
 	clear_parser = subparsers.add_parser('clear')
@@ -54,7 +57,8 @@ def start_spider(args):
 
 	spider = ImageSpider(domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
 				monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
-				images_store=args.images_store)
+				images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
+				no_cdns=args.no_cdns)
 
 	settings = get_project_settings()
 	crawler = Crawler(settings)

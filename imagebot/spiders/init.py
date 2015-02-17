@@ -1,0 +1,132 @@
+#helper module for initializing Imagebot
+from os.path import join as joinpath, exists, expanduser, realpath, dirname
+from os import mkdir, makedirs
+from multiprocessing import Process, Pipe
+from scrapy import log
+from scrapy.contrib.spiders import Rule
+from scrapy.contrib.linkextractors import LinkExtractor
+from PIL import Image
+
+from imagebot.common.web.urls import AbsUrl
+from imagebot.dbmanager import DBManager
+import imagebot.settings as settings
+from imagebot.common.web.cdns import cdns
+
+no_gtk = True
+try:
+	from gi.repository import Gtk
+	from imagebot.monitor import Monitor
+	no_gtk = False
+except ImportError:
+	pass
+
+
+def process_kwargs(bot, kwargs):
+	bot._jobname = 'default'
+	bot._inpipe = None
+
+	images_store = kwargs.get('images_store')
+	if images_store is not None:
+		settings.IMAGES_STORE_FINAL = images_store
+
+	start_urls = kwargs.get('start_urls', None)
+	if start_urls:
+		urls = [u.strip() for u in start_urls.split(',') if len(u.strip()) > 0]
+		
+		if any([not u.startswith('http') for u in urls]):
+			log.msg('missing url scheme, (http/https)?', log.ERROR)
+			return
+
+		kwargs['start_urls'] = urls
+		log.msg('start urls: \n' + '\n'.join(urls), log.DEBUG)
+
+		allowed_domains = list(set([AbsUrl(u).domain for u in urls]))
+		bot.allowed_domains = allowed_domains
+	else:
+		log.msg('must provide start url(s)', log.ERROR)
+		return
+
+	domains = kwargs.get('domains', None)
+	if domains:
+		domains = [d.strip() for d in domains.split(',')]
+		bot.allowed_domains.extend(domains)
+	
+	log.msg('allowed domains: \n' + ', '.join(bot.allowed_domains), log.DEBUG)
+
+	bot.allowed_image_domains = bot.allowed_domains
+	if not kwargs['no_cdns']:
+		bot.allowed_image_domains.extend(cdns)
+
+	log.msg('allowed image domains: \n' + ', '.join(bot.allowed_image_domains), log.DEBUG)
+
+	bot._jobname = bot.allowed_domains[0]
+
+	jobname = kwargs.get('jobname', None)
+	if jobname:
+		bot._jobname = jobname
+
+	stay_under = kwargs.get('stay_under', None)
+	if stay_under:
+		bot.rules = (Rule(LinkExtractor(allow=(start_urls + '.*', )), callback='parse_item', follow=True),)
+		log.msg('staying under: %s'%start_urls, log.DEBUG)
+
+	if kwargs['monitor']:
+		if not no_gtk:
+			bot._inpipe, outpipe = Pipe()
+			mon = Monitor(bot._jobname, outpipe)
+			monitor = Process(target=mon.start)
+			monitor.start()
+		else:
+			log.msg('gtk / python-gi not found, will not start monitor ui', log.ERROR)
+
+	if kwargs['user_agent']:
+		settings.USER_AGENT = kwargs['user_agent']
+
+	if kwargs['minsize']:
+		settings.IMAGES_MIN_WIDTH, settings.IMAGES_MIN_HEIGHT = kwargs['minsize']
+
+	if kwargs['no_cache']:
+		settings.HTTPCACHE_ENABLED = False
+
+	if kwargs['depth_limit']:
+		settings.DEPTH_LIMIT = kwargs['depth_limit']
+
+	if kwargs['url_regex']:
+		bot.rules = (Rule(LinkExtractor(allow=kwargs['url_regex'],), callback='parse_item', follow=True),)
+
+	Image.init()
+	bot.image_extensions = Image.EXTENSION.keys()
+	
+	setup_dirs()
+	setup_db()
+
+	final_storepath = joinpath(settings.IMAGES_STORE_FINAL, bot._jobname)
+	if not exists(final_storepath):
+		mkdir(final_storepath)
+
+
+
+def setup_dirs():
+	def create_dir(path):
+		if not exists(path):
+			makedirs(path)
+
+	settings.IMAGES_STORE = expanduser(settings.IMAGES_STORE)
+	create_dir(settings.IMAGES_STORE)
+	settings.IMAGES_STORE_FINAL = expanduser(settings.IMAGES_STORE_FINAL)	
+	create_dir(settings.IMAGES_STORE_FINAL)
+	settings.HTTPCACHE_DIR = expanduser(settings.HTTPCACHE_DIR)
+	create_dir(settings.HTTPCACHE_DIR)
+
+	
+def setup_db():
+	settings.IMAGES_DB = expanduser(settings.IMAGES_DB)
+
+	db = DBManager(settings.IMAGES_DB)
+	db.connect()
+	schema_script = None
+	with open(joinpath(dirname(realpath(__file__)).rsplit('/', 1)[0], 'tables.sql'), 'r') as f:
+		schema_script = f.read()
+	db.executescript(schema_script)
+	db.disconnect()
+
