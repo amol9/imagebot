@@ -9,7 +9,7 @@ from PIL import Image
 
 from imagebot.common.web.urls import AbsUrl
 from imagebot.dbmanager import DBManager
-import imagebot.settings as settings
+from imagebot.settings import settings
 from imagebot.common.web.cdns import cdns
 
 no_gtk = True

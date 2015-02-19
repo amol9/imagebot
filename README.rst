@@ -2,7 +2,7 @@
 imagebot
 ========
 
-A web bot to scrape images from websites.
+A web bot to crawl websites and scrape images.
 
 Features
 ========
@@ -88,4 +88,4 @@ Download
 
 * PyPI: http://pypi.python.org/pypi/imagebot/
 * Source: https://bitbucket.org/amol9/imagebot/
-
+[Use git clone flag "--recursive" to pull submodule sources as well.]

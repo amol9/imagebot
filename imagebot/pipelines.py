@@ -8,7 +8,7 @@ from time import time, sleep
 from scrapy.contrib.pipeline.images import ImagesPipeline
 
 from imagebot.items import ImageItem
-import imagebot.settings as settings
+from imagebot.settings import settings
 from imagebot.dbmanager import DBManager
 
 

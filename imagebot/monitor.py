@@ -10,7 +10,7 @@ import shutil
 from time import sleep
 from threading import Thread, Event
 
-import imagebot.settings as settings
+from imagebot.settings import settings
 from imagebot.dbmanager import DBManager
 
 

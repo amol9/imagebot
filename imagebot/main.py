@@ -2,10 +2,11 @@ from twisted.internet import reactor
 from scrapy.crawler import Crawler
 from scrapy import log, signals
 from scrapy.utils.project import get_project_settings
+from scrapy.settings import Settings
 from argparse import ArgumentParser
 
 from imagebot.spiders.bot import ImageSpider
-import imagebot.settings as settings
+from imagebot.settings import settings
 from imagebot.clear import clear_cache, clear_db
 
 
@@ -60,8 +61,9 @@ def start_spider(args):
 				images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
 				no_cdns=args.no_cdns)
 
-	settings = get_project_settings()
-	crawler = Crawler(settings)
+	project_settings = Settings()
+	project_settings.setmodule(settings)
+	crawler = Crawler(project_settings)
 	crawler.signals.connect(reactor.stop, signal=signals.spider_closed)
 	crawler.configure()
 	crawler.crawl(spider)

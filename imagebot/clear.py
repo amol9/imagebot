@@ -4,7 +4,7 @@ from os.path import join as joinpath, expanduser
 from os import remove
 from shutil import rmtree 
 
-import imagebot.settings as settings
+from imagebot.settings import settings
 from imagebot.dbmanager import DBManager
 from imagebot.system import *
 

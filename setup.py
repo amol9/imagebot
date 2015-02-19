@@ -4,6 +4,11 @@ ez_setup.use_setuptools()
 from setuptools import setup, find_packages
 import platform
 import imp
+from imagebot.version import version
+
+with open('imagebot/env.py', 'w') as f:
+	f.write('env=\'release\'\n')
+
 
 install_requires = ['scrapy']
 
@@ -16,8 +21,7 @@ entry_points = {}
 entry_points['console_scripts'] = ['imagebot=imagebot.main:main']
 
 setup(	name='imagebot',
-	version='1.0.3',
-	description='A web bot to scrape images from websites.',
+	version=version,
 	author='Amol Umrale',
 	author_email='babaiscool@gmail.com',
 	url='http://pypi.python.org/pypi/imagebot/',
@@ -28,3 +32,5 @@ setup(	name='imagebot',
 	install_requires=install_requires
 )
 
+with open('imagebot/env.py', 'w') as f:
+	f.write('env=\'dev\'\n')

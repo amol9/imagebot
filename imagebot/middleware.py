@@ -3,7 +3,7 @@ from os.path import exists
 import pickle
 from scrapy import log
 
-import imagebot.settings as settings
+from imagebot.settings import settings
 from imagebot.dbmanager import DBManager
 
 
