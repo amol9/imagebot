@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 
 from imagebot.spiders.bot import ImageSpider
 from imagebot.settings import settings
-from imagebot.clear import clear_cache, clear_db
+from imagebot.clear import clear_cache, clear_db, clear_duplicate_images
 
 
 def parse_arguments():
@@ -39,6 +39,8 @@ def parse_arguments():
 	clear_parser.add_argument('--cache', dest='clear_cache', action='store_true', help='clear cache')
 	clear_parser.add_argument('--db', dest='clear_db',
 					help='clear image metadata from db(url / domain name / job name / ALL to clear entire db)')
+	clear_parser.add_argument('--duplicate-images', dest='clear_duplicate_images',
+					help='delete duplicate images by job / domain name')
 
 	args = argparser.parse_args()
 
@@ -77,7 +79,10 @@ def clear(args):
 		clear_cache()
 
 	if args.clear_db is not None:
-		clear_db(args.clear_db)	
+		clear_db(args.clear_db)
+
+	if args.clear_duplicate_images is not None:
+		clear_duplicate_images(args.clear_duplicate_images)	
 
 
 def main():
