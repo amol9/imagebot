@@ -8,12 +8,15 @@ from argparse import ArgumentParser
 from imagebot.spiders.bot import ImageSpider
 from imagebot.settings import settings
 from imagebot.clear import clear_cache, clear_db, clear_duplicate_images
+from imagebot.version import version
 
 
 def parse_arguments():
 	log_level_lookup = dict([(v.lower(), k) for (k, v) in log.level_names.items()])
 
 	argparser = ArgumentParser()
+
+	argparser.add_argument('-v', '--version', action='version', version=version, help='print version')
 
 	subparsers = argparser.add_subparsers(dest='subcommand')
 
@@ -27,6 +30,8 @@ def parse_arguments():
 	crawl_parser.add_argument('-r', '--url-regex', help='regex filter for urls to be followed')
 	crawl_parser.add_argument('-is', '--images-store', help='image store location, default: %s'%settings.IMAGES_STORE_FINAL)
 	crawl_parser.add_argument('-dl', '--depth-limit', help='depth limit, default: no limit')
+	#crawl_parser.add_argument('-dd', '--download-delay', help='download delay between requests')
+	crawl_parser.add_argument('-at', '--auto-throttle', action='store_true', help='enable auto throttle')
 	crawl_parser.add_argument('-l', '--log-level', choices=list(log_level_lookup.keys()), default='error',
 					help='logging level')
 	crawl_parser.add_argument('-m', '--monitor', action='store_true', help='monitor crawled images in a window')
@@ -43,6 +48,9 @@ def parse_arguments():
 					help='delete duplicate images by job / domain name')
 
 	args = argparser.parse_args()
+
+	#if args.version:
+		#return args, 'version'
 
 	if args.subcommand == 'clear':
 		return args, 'clear'
@@ -61,7 +69,7 @@ def start_spider(args):
 	spider = ImageSpider(domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
 				monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
 				images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
-				no_cdns=args.no_cdns)
+				no_cdns=args.no_cdns, auto_throttle=args.auto_throttle)
 
 	project_settings = Settings()
 	project_settings.setmodule(settings)
@@ -87,10 +95,14 @@ def clear(args):
 
 def main():
 	args, subcommand = parse_arguments()
-	if subcommand == 'clear':
+	if subcommand == 'version':
+		print(version)
+	elif subcommand == 'clear':
 		clear(args)
-	else:
+	elif subcommand == 'crawl':
 		start_spider(args)
+	else:
+		print('invalid command')
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ import imp
 from imagebot.version import version
 
 with open('imagebot/env.py', 'w') as f:
-	f.write('env=\'release\'\n')
+	f.write('env = \'release\'\n')
 
 
 install_requires = ['scrapy']
@@ -25,7 +25,7 @@ setup(	name='imagebot',
 	author='Amol Umrale',
 	author_email='babaiscool@gmail.com',
 	url='http://pypi.python.org/pypi/imagebot/',
-	packages=['imagebot', 'imagebot.spiders'],
+	packages=['imagebot', 'imagebot.spiders', 'imagebot.common', 'imagebot.common.web'],
 	package_data={'imagebot': ['tables.sql']},
 	scripts=['ez_setup.py'],
 	entry_points=entry_points,
@@ -33,4 +33,4 @@ setup(	name='imagebot',
 )
 
 with open('imagebot/env.py', 'w') as f:
-	f.write('env=\'dev\'\n')
+	f.write('env = \'dev\'\n')

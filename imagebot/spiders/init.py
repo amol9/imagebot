@@ -94,6 +94,13 @@ def process_kwargs(bot, kwargs):
 	if kwargs['url_regex']:
 		bot.rules = (Rule(LinkExtractor(allow=kwargs['url_regex'],), callback='parse_item', follow=True),)
 
+	'''if kwargs['download_delay']:
+		log.msg('download delay: %s'%kwargs['download_delay'], log.DEBUG)
+		settings.DOWNLOAD_DELAY = kwargs['download_delay']'''
+
+	if kwargs['auto_throttle']:
+		settings.AUTOTHROTTLE_ENABLED = True
+
 	Image.init()
 	bot.image_extensions = Image.EXTENSION.keys()
 	
