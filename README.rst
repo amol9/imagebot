@@ -106,4 +106,4 @@ Download
 ========
 
 * PyPI: http://pypi.python.org/pypi/imagebot/
-* Source: https://bitbucket.org/amol9/imagebot/ [Use git clone flag "--recursive" to pull submodule sources as well.]
+* Source: https://github.com/amol9/imagebot/ [Use git clone flag "--recursive" to pull submodule sources as well.]
