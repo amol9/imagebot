@@ -2,7 +2,7 @@
 imagebot
 ========
 
-A web bot to crawl websites and scrape images.
+This bot crawls a given website or url(s) and downloads all the images.
 
 Features
 ========

@@ -21,6 +21,7 @@ entry_points = {}
 entry_points['console_scripts'] = ['imagebot=imagebot.main:main']
 
 setup(	name='imagebot',
+	description='A web bot to crawl websites and scrape images.',
 	version=version,
 	author='Amol Umrale',
 	author_email='babaiscool@gmail.com',
@@ -29,7 +30,17 @@ setup(	name='imagebot',
 	package_data={'imagebot': ['tables.sql']},
 	scripts=['ez_setup.py'],
 	entry_points=entry_points,
-	install_requires=install_requires
+	install_requires=install_requires,
+	classifiers=[
+		'Development Status :: 4 - Beta',
+		'Environment :: Console',
+		'Framework :: Scrapy',
+		'License :: OSI Approved :: MIT License',
+		'Natural Language :: English',
+		'Operating System :: POSIX :: Linux',
+		'Programming Language :: Python :: 2.7',
+		'Topic :: Internet :: WWW/HTTP :: Indexing/Search'
+	]		
 )
 
 with open('imagebot/env.py', 'w') as f:
