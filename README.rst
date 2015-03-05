@@ -7,7 +7,7 @@ This bot crawls a given website or url(s) and downloads all the images.
 Features
 ========
 
-* Supported platforms: Linux / Python 2.7.
+* Supported platforms: Linux / Windows / Python 2.7.
 * Uses scrapy web crawling framework.
 * Maintains a database of all downloaded images to avoid duplicate downloads.
 * Optionally, it can scrape only under a particular url, e.g. scraping *\http://website.com/albums/new* with this option will only download from new album.
@@ -17,84 +17,128 @@ Features
 Usage
 =====
 
-**crawl commands:**
+**crawl command:**
 
 * Scrape images from *\http://website.com*::
 
 	imagebot crawl http://website.com
 
-* Scrape images from *\http://website.com* while allowing images from a cdn such as amazonaws.com (add multiple domains with comma separated list)::
+* Options for crawl command:
 
-	imagebot crawl http://website.com -d amazonaws.com
+	*-d, --domains*
 
-* Specify image store location::
+	Scrape images while allowing images to be downloaded from other domain(s) (add multiple domains with comma separated list). The domain in the start url(s) is(are) allowed by default.
 
-	imagebot crawl http://website.com -is /home/images
+	``imagebot crawl http://website.com -d otherwebsite.com,anotherwebsite.com``
+					
+	*-is, --images-store*
+				
+	Specify image store location.
 
-* Specify minimum size of image to be downloaded (width x height)::
-
-	imagebot crawl http://website.com -s 300x300
-
-* Stay under *\http://website.com/albums/new*::
-
-	imagebot crawl http://website.com/albums/new -u
-
-* Launch monitor windows for live images::
-
-	imagebot crawl http://website.com -m
-
-* Set user-agent::
-
-	imagebot crawl http://website.com -a "my_imagebot(http://mysite.com)"
-
-* Specify regex for urls (does not apply to start url(s))::
-
-	imagebot crawl http://website.com -r .*gallery.*
-
-* Specify depth limit::
-
-	imagebot crawl http://website.com -dl 2
-
-* A list of well known cdn's is included and enabled by default for image downloads. To disable it::
-
-	imagebot crawl http://website.com --no-cdns
-
-* Enable auto throttle (details: http://doc.scrapy.org/en/latest/topics/autothrottle.html#std:setting-AUTOTHROTTLE_ENABLED)::
-
-	imagebot crawl http://website.com -at
-
-* For more options, get help::
-
-	imagebot crawl -h
-
-**clear commands:**
-
-* Clear cache::
+	``imagebot crawl http://website.com -is /home/images``
 	
-	imagebot clear --cache
+	*-s, --min-size*
 
-* Remove image metadata from database::
+	Specify minimum size of image to be downloaded (width x height).
 
-	imagebot clear --db website.com
+	``imagebot crawl http://website.com -s 300x300``
 
-* Multiple copies of same image may be downloaded due to different urls. Clean up duplicate images::
+	*-u, --stay-under*
 
-	iamgebot clear --duplicate-images website.com
+	Stay under the start url. Only those urls that have the start url as prefix will be crawled. Useful, for example, to crawl an album or a subsection on a website.
 
-* Get help::
+	``imagebot crawl http://website.com/albums/new -u``
 
-	imagebot clear -h
+	*-m, --monitor*
+
+	Launch monitor window for displaying images as they are scraped.
+
+	``imagebot crawl http://website.com -m``
+
+	*-a, --user-agent*
+
+	Set user-agent string. Default: imagebot. It is recommended to change it to yidentify your bot as a matter of responsible crawling.
+
+	``imagebot crawl http://website.com -a "my_imagebot(http://mysite.com)"``
+
+	*-r, --url-regex*
+
+	Specify regex for urls. Only those urls matching the regex will be crawled. It does not apply to start url(s).
+
+	``imagebot crawl http://website.com -r .*gallery.*``
+
+	*-dl, --depth-limit*
+
+	Specify depth limit for crawling. 
+
+	``imagebot crawl http://website.com -dl 2``
+
+	*--no-cdns*
+
+	A list of well known cdn's is included and enabled by default for image downloads. Use this option to disable it.
+
+	*-at, --auto-throttle*
+
+	Enable auto throttle feature of scrapy. (`details in scrapy docs <http://doc.scrapy.org/en/latest/topics/autothrottle.html#std:setting-AUTOTHROTTLE_ENABLED>`_).
+
+	*-j, --jobname*
+
+	Specify a job name. This will be used to store image meta data in the database. By default, domain name of the start url is used as the job name.
+
+	*-nc, --no-cache*
+
+	Disable http caching.
+
+	*-l, --log-level*
+
+	Specify log level.
+	Supported levels: info, silent, critical, error, debug, warning. Default: error.
+
+	``imagebot crawl http://website.com -l debug``
+
+	*-h, --help*
+
+	Get help on crawl command options.
+
+**clear command:**
+
+* This command is useful for various kinds of cleanup.
+
+* Options for clear command:	
+
+	*--cache*
+
+	Clear http cache.
+	
+	*--db*
+
+	Remove image metadata for a job from the database.
+
+	``imagebot clear --db website.com``
+
+	*--duplicate-images*
+
+	Multiple copies of same image may be downloaded due to different urls. Use this option to delete duplucate images for a job.
+
+	``imagebot clear --duplicate-images website.com``
+
+	*-h, --help*
+
+	Get help on clear command options.
 
 Dependencies
 ============
 
-#. python-gi (Python GObject Introspection API) (if using monitor UI)
+#. pywin32 (http://sourceforge.net/projects/pywin32/)
 
-	On Ubuntu::
-	
-		apt-get install python-gi
+	Needed on Windows.
 
-#. scrapy (a powerful web crawling framework)
+#. python-gi (Python GObject Introspection API)
+
+	Needed on Linux if using monitor UI.
+	On Ubuntu: ``apt-get install python-gi``
+
+#. scrapy (web crawling framework)
 
 	It will be automatically installed by pip.
 

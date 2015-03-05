@@ -1,6 +1,6 @@
 #helper module for initializing Imagebot
 from os.path import join as joinpath, exists, expanduser, realpath, dirname
-from os import mkdir, makedirs
+from os import mkdir, makedirs, sep
 from multiprocessing import Process, Pipe
 from scrapy import log
 from scrapy.contrib.spiders import Rule
@@ -11,14 +11,7 @@ from imagebot.common.web.urls import AbsUrl
 from imagebot.dbmanager import DBManager
 from imagebot.settings import settings
 from imagebot.common.web.cdns import cdns
-
-no_gtk = True
-try:
-	from gi.repository import Gtk
-	from imagebot.monitor import Monitor
-	no_gtk = False
-except ImportError:
-	pass
+from imagebot.monitor import get_monitor, MonitorException
 
 
 def process_kwargs(bot, kwargs):
@@ -67,17 +60,23 @@ def process_kwargs(bot, kwargs):
 
 	stay_under = kwargs.get('stay_under', None)
 	if stay_under:
-		bot.rules = (Rule(LinkExtractor(allow=(start_urls + '.*', )), callback='parse_item', follow=True),)
+		bot.rules = ()
+		for start_url in kwargs['start_urls']:
+			base_url = AbsUrl(start_url)
+			def make_abs(url):
+				if not url.startswith('http'):
+					return base_url.extend(url)
+			bot.rules +=((Rule(LinkExtractor(allow=(start_url + '.*',)), callback='parse_item', follow=True),))
 		log.msg('staying under: %s'%start_urls, log.DEBUG)
 
 	if kwargs['monitor']:
-		if not no_gtk:
+		try:
 			bot._inpipe, outpipe = Pipe()
-			mon = Monitor(bot._jobname, outpipe)
-			monitor = Process(target=mon.start)
-			monitor.start()
-		else:
-			log.msg('gtk / python-gi not found, will not start monitor ui', log.ERROR)
+			mon_start_func = get_monitor()
+			monitor_process = Process(target=mon_start_func, args=(outpipe,))
+			monitor_process.start()
+		except MonitorException:
+			log.msg('will not start monitor ui', log.ERROR)
 
 	if kwargs['user_agent']:
 		settings.USER_AGENT = kwargs['user_agent']
@@ -89,7 +88,11 @@ def process_kwargs(bot, kwargs):
 		settings.HTTPCACHE_ENABLED = False
 
 	if kwargs['depth_limit']:
-		settings.DEPTH_LIMIT = kwargs['depth_limit']
+		depth_limit = int(kwargs['depth_limit'])
+		'''if depth_limit == 0:
+			bot.rules = (Rule(LinkExtractor(allow=(start_url + '.*',), callback='parse_item', follow=False),))
+		else:'''
+		settings.DEPTH_LIMIT = depth_limit
 
 	if kwargs['url_regex']:
 		bot.rules = (Rule(LinkExtractor(allow=kwargs['url_regex'],), callback='parse_item', follow=True),)
@@ -132,7 +135,7 @@ def setup_db():
 	db = DBManager(settings.IMAGES_DB)
 	db.connect()
 	schema_script = None
-	with open(joinpath(dirname(realpath(__file__)).rsplit('/', 1)[0], 'tables.sql'), 'r') as f:
+	with open(joinpath(dirname(realpath(__file__)).rsplit(sep, 1)[0], 'tables.sql'), 'r') as f:
 		schema_script = f.read()
 	db.executescript(schema_script)
 	db.disconnect()
