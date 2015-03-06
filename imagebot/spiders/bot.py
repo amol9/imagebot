@@ -15,9 +15,8 @@ class ImageSpider(CrawlSpider):
 	allowed_domains = []
 	start_urls = []
 
-	rules = (
-		Rule(LinkExtractor(allow=('.*', )), callback='parse_item', follow=True),
-	)
+	#by default allow all urls
+	rules = (Rule(LinkExtractor(allow=('.*', )), callback='parse_item', follow=True),)
 
 
 	def __init__(self, **kwargs):
@@ -25,6 +24,11 @@ class ImageSpider(CrawlSpider):
 		ImageSpider.allowed_domains = self.allowed_domains
 
 		super(ImageSpider, self).__init__(**kwargs)
+
+
+	#overridden to enable crawling of just one page by setting follow=False
+	def parse(self, response):
+        	return self._parse_response(response, self.parse_start_url, cb_kwargs={}, follow=(not self._start_url_only))
 	
 	
 	def parse_start_url(self, response):
@@ -61,7 +65,6 @@ class ImageSpider(CrawlSpider):
 
 			if not url.startswith('http') and not url.startswith('//'):
 					image_urls[i] = base_url.extend(url)
-					log.msg('abs url: %s'%url, log.DEBUG)
 			else:
 				if url.startswith('//'):
 					url = base_url.extend(url)

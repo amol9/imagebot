@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 from gi.repository import Gtk, GObject, GLib
 from gi.repository.GdkPixbuf import Pixbuf, InterpType
 from gi.repository import Gdk
@@ -7,7 +5,9 @@ import sys
 import os
 from time import sleep
 
+
 GObject.signal_new('change_image', Gtk.Window, GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (GObject.TYPE_STRING,))
+
 
 class MyWindow(Gtk.Window):
 

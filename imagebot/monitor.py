@@ -33,7 +33,3 @@ def get_monitor():
 		
 	raise MonitorException()
 
-
-	
-
-

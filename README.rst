@@ -11,7 +11,9 @@ Features
 * Uses scrapy web crawling framework.
 * Maintains a database of all downloaded images to avoid duplicate downloads.
 * Optionally, it can scrape only under a particular url, e.g. scraping *\http://website.com/albums/new* with this option will only download from new album.
-* Scrapes through javascript popup links.
+* Can filter urls by regex.
+* Can filter images by minimum size.
+* Scrapes through javascript popup links (limited support).
 * Live monitor window for displaying images as they are scraped.
 
 Usage
@@ -19,9 +21,10 @@ Usage
 
 **crawl command:**
 
-* Scrape images from *\http://website.com*::
+* Scrape images::
 
 	imagebot crawl http://website.com
+	imagebot crawl http://website.com,http://otherwebsite.com
 
 * Options for crawl command:
 
@@ -33,7 +36,7 @@ Usage
 					
 	*-is, --images-store*
 				
-	Specify image store location.
+	Specify image store location. Default: ~/Pictures/crawled/[jobname]
 
 	``imagebot crawl http://website.com -is /home/images``
 	
@@ -69,7 +72,7 @@ Usage
 
 	*-dl, --depth-limit*
 
-	Specify depth limit for crawling. 
+	Specify depth limit for crawling. Use value of 0 to scrape only on start url(s). 
 
 	``imagebot crawl http://website.com -dl 2``
 
@@ -135,7 +138,7 @@ Dependencies
 
 #. python-gi (Python GObject Introspection API)
 
-	Needed on Linux if using monitor UI.
+	Needed on Linux for gtk UI. (Optional). If not found, python built-in Tkinter will be used.
 	On Ubuntu: ``apt-get install python-gi``
 
 #. scrapy (web crawling framework)

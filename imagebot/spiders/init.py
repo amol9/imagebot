@@ -17,6 +17,7 @@ from imagebot.monitor import get_monitor, MonitorException
 def process_kwargs(bot, kwargs):
 	bot._jobname = 'default'
 	bot._inpipe = None
+	bot._start_url_only = False
 
 	images_store = kwargs.get('images_store')
 	if images_store is not None:
@@ -62,12 +63,15 @@ def process_kwargs(bot, kwargs):
 	if stay_under:
 		bot.rules = ()
 		for start_url in kwargs['start_urls']:
-			base_url = AbsUrl(start_url)
-			def make_abs(url):
-				if not url.startswith('http'):
-					return base_url.extend(url)
-			bot.rules +=((Rule(LinkExtractor(allow=(start_url + '.*',)), callback='parse_item', follow=True),))
+			bot.rules += (Rule(LinkExtractor(allow=(start_url + '.*',)), callback='parse_item', follow=True),)
 		log.msg('staying under: %s'%start_urls, log.DEBUG)
+
+	if kwargs['url_regex']:
+		regex_rule = (Rule(LinkExtractor(allow=kwargs['url_regex'],), callback='parse_item', follow=True),)
+		if stay_under:
+			bot.rules += regex_rule
+		else:
+			bot.rules = regex_rule
 
 	if kwargs['monitor']:
 		try:
@@ -88,14 +92,12 @@ def process_kwargs(bot, kwargs):
 		settings.HTTPCACHE_ENABLED = False
 
 	if kwargs['depth_limit']:
-		depth_limit = int(kwargs['depth_limit'])
-		'''if depth_limit == 0:
-			bot.rules = (Rule(LinkExtractor(allow=(start_url + '.*',), callback='parse_item', follow=False),))
-		else:'''
-		settings.DEPTH_LIMIT = depth_limit
+		depth_limit = abs(int(kwargs['depth_limit']))
+		if depth_limit == 0:
+			bot._start_url_only = True
+		else:
+			settings.DEPTH_LIMIT = depth_limit
 
-	if kwargs['url_regex']:
-		bot.rules = (Rule(LinkExtractor(allow=kwargs['url_regex'],), callback='parse_item', follow=True),)
 
 	'''if kwargs['download_delay']:
 		log.msg('download delay: %s'%kwargs['download_delay'], log.DEBUG)
@@ -113,7 +115,6 @@ def process_kwargs(bot, kwargs):
 	final_storepath = joinpath(settings.IMAGES_STORE_FINAL, bot._jobname)
 	if not exists(final_storepath):
 		mkdir(final_storepath)
-
 
 
 def setup_dirs():
