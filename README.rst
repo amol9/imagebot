@@ -121,7 +121,7 @@ Usage
 
 	*--duplicate-images*
 
-	Multiple copies of same image may be downloaded due to different urls. Use this option to delete duplucate images for a job.
+	Multiple copies of same image may be downloaded due to different urls. Use this option to delete duplicate images for a job.
 
 	``imagebot clear --duplicate-images website.com``
 

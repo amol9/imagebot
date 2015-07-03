@@ -39,6 +39,7 @@ setup(	name='imagebot',
 		'License :: OSI Approved :: MIT License',
 		'Natural Language :: English',
 		'Operating System :: POSIX :: Linux',
+		'Operating System :: Microsoft :: Windows',
 		'Programming Language :: Python :: 2.7',
 		'Topic :: Internet :: WWW/HTTP :: Indexing/Search'
 	]		
