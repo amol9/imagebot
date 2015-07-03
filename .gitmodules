@@ -1,3 +1,0 @@
-[submodule "imagebot/common/web"]
-	path = imagebot/common/web
-	url = https://github.com/amol9/web.git
