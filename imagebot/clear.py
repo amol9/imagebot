@@ -6,10 +6,11 @@ from shutil import rmtree
 from hashlib import md5
 from collections import namedtuple
 
+from mutils.system import *
+from mutils.web.urls import AbsUrl
+
 from imagebot.settings import settings
 from imagebot.dbmanager import DBManager
-from imagebot.system import *
-from imagebot.common.web.urls import AbsUrl
 
 
 FileItem = namedtuple('FileItem', ['path', 'hash', 'dup'])

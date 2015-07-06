@@ -1,10 +1,6 @@
-from imagebot.system import *
-if is_py3():
-	from urllib.parse import unquote
-else:
-	from urllib import unquote
 import sys
 from os.path import join as joinpath
+from six.moves.urllib.parse import unquote
 
 from imagebot.dbmanager import DBManager
 

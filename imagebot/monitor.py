@@ -1,4 +1,4 @@
-from scrapy import log
+import logging as log
 import imp
 
 
@@ -23,13 +23,13 @@ def get_monitor():
 		imp.find_module('gi')
 		return start_gtk_monitor
 	except ImportError as e:
-		log.msg(e.message, log.ERROR)
+		log.error(e.message)
 
 	try:
 		imp.find_module('Tkinter')
 		return start_tk_monitor
 	except ImportError as e:
-		log.msg(e.message, log.ERROR)
+		log.error(e.message)
 		
 	raise MonitorException()
 

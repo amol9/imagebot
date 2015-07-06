@@ -1,13 +1,14 @@
 import scrapy
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors import LinkExtractor
 from scrapy.http import Request
-from scrapy import log
+import logging as log
 import re
+
+from mutils.web.urls import AbsUrl
 
 from imagebot.items import ImageItem
 import imagebot.spiders.init as init
-from imagebot.common.web.urls import AbsUrl
 
 
 class ImageSpider(CrawlSpider):
@@ -71,7 +72,7 @@ class ImageSpider(CrawlSpider):
 
 				if not any([(AbsUrl(url).domain == ad) for ad in self.allowed_image_domains]):
 					image_urls[i] = ''
-					log.msg('blocked image url: %s'%url, log.DEBUG)
+					log.debug('blocked image url: %s'%url)
 				else:
 					image_urls[i] = url
 
@@ -111,7 +112,7 @@ class ImageSpider(CrawlSpider):
 					if not url.startswith('http'):
 						url = base_url.extend(url)
 					requests.append(Request(url, meta={'js_link': True}, headers={'Referer': response.url}))
-					log.msg('adding js url: %s'%url, log.DEBUG)
+					log.debug('adding js url: %s'%url)
 
 		return requests
 

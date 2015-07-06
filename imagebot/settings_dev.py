@@ -1,4 +1,5 @@
 from os.path import join as joinpath
+import logging
 
 BOT_NAME = 'imagebot'
 DATA_DIR = '.imagebot'
@@ -27,9 +28,10 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 LOG_ENABLED = True
+LOG_LEVEL = logging.DEBUG
 
 HTTPCACHE_ENABLED = True
-HTTPCACHE_POLICY = 'scrapy.contrib.httpcache.RFC2616Policy'
+HTTPCACHE_POLICY = 'scrapy.extensions.httpcache.RFC2616Policy'
 HTTPCACHE_DIR = joinpath('~', DATA_DIR, 'httpcache')
 
 DEPTH_LIMIT = 0

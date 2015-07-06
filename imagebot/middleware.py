@@ -1,7 +1,7 @@
 from scrapy.exceptions import IgnoreRequest
 from os.path import exists
 import pickle
-from scrapy import log
+import logging as log
 
 from imagebot.settings import settings
 from imagebot.dbmanager import DBManager
@@ -40,8 +40,8 @@ class ImageStoreMiddleware(object):
 
 class DebugMiddleware(object):
 	def process_request(self, request, spider):
-		log.msg('reqdump-start', log.DEBUG)
-		log.msg('url: %s'%request.url, log.DEBUG)
-		log.msg(str(request.headers), log.DEBUG)
-		log.msg('reqdump-end', log.DEBUG)
+		log.debug('reqdump-start')
+		log.debug('url: %s'%request.url)
+		log.debug(str(request.headers))
+		log.debug('reqdump-end')
 		return None

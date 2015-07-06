@@ -1,16 +1,18 @@
 #helper module for initializing Imagebot
+
 from os.path import join as joinpath, exists, expanduser, realpath, dirname
 from os import mkdir, makedirs, sep
 from multiprocessing import Process, Pipe
-from scrapy import log
-from scrapy.contrib.spiders import Rule
-from scrapy.contrib.linkextractors import LinkExtractor
+import logging as log
+from scrapy.spiders import Rule
+from scrapy.linkextractors import LinkExtractor
 from PIL import Image
 
-from imagebot.common.web.urls import AbsUrl
+from mutils.web.urls import AbsUrl
+from mutils.web.cdns import cdns
+
 from imagebot.dbmanager import DBManager
 from imagebot.settings import settings
-from imagebot.common.web.cdns import cdns
 from imagebot.monitor import get_monitor, MonitorException
 
 
@@ -28,16 +30,16 @@ def process_kwargs(bot, kwargs):
 		urls = [u.strip() for u in start_urls.split(',') if len(u.strip()) > 0]
 		
 		if any([not u.startswith('http') for u in urls]):
-			log.msg('missing url scheme, (http/https)?', log.ERROR)
+			log.error('missing url scheme, (http/https)?')
 			return
 
 		kwargs['start_urls'] = urls
-		log.msg('start urls: \n' + '\n'.join(urls), log.DEBUG)
+		log.debug('start urls: \n' + '\n'.join(urls))
 
 		allowed_domains = list(set([AbsUrl(u).domain for u in urls]))
 		bot.allowed_domains = allowed_domains
 	else:
-		log.msg('must provide start url(s)', log.ERROR)
+		log.error('must provide start url(s)')
 		return
 
 	domains = kwargs.get('domains', None)
@@ -45,13 +47,13 @@ def process_kwargs(bot, kwargs):
 		domains = [d.strip() for d in domains.split(',')]
 		bot.allowed_domains.extend(domains)
 	
-	log.msg('allowed domains: \n' + ', '.join(bot.allowed_domains), log.DEBUG)
+	log.debug('allowed domains: \n' + ', '.join(bot.allowed_domains))
 
 	bot.allowed_image_domains = bot.allowed_domains
 	if not kwargs['no_cdns']:
 		bot.allowed_image_domains.extend(cdns)
 
-	log.msg('allowed image domains: \n' + ', '.join(bot.allowed_image_domains), log.DEBUG)
+	log.debug('allowed image domains: \n' + ', '.join(bot.allowed_image_domains))
 
 	bot._jobname = bot.allowed_domains[0]
 
@@ -64,7 +66,7 @@ def process_kwargs(bot, kwargs):
 		bot.rules = ()
 		for start_url in kwargs['start_urls']:
 			bot.rules += (Rule(LinkExtractor(allow=(start_url + '.*',)), callback='parse_item', follow=True),)
-		log.msg('staying under: %s'%start_urls, log.DEBUG)
+		log.debug('staying under: %s'%start_urls)
 
 	if kwargs['url_regex']:
 		regex_rule = (Rule(LinkExtractor(allow=kwargs['url_regex'],), callback='parse_item', follow=True),)
@@ -80,7 +82,7 @@ def process_kwargs(bot, kwargs):
 			monitor_process = Process(target=mon_start_func, args=(outpipe,))
 			monitor_process.start()
 		except MonitorException:
-			log.msg('will not start monitor ui', log.ERROR)
+			log.error('will not start monitor ui')
 
 	if kwargs['user_agent']:
 		settings.USER_AGENT = kwargs['user_agent']

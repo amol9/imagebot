@@ -1,9 +1,10 @@
 from twisted.internet import reactor
 from scrapy.crawler import Crawler
-from scrapy import log, signals
+from scrapy import signals
 from scrapy.utils.project import get_project_settings
 from scrapy.settings import Settings
 from argparse import ArgumentParser
+import logging
 
 from imagebot.spiders.bot import ImageSpider
 from imagebot.settings import settings
@@ -12,7 +13,7 @@ from imagebot.version import version
 
 
 def parse_arguments():
-	log_level_lookup = dict([(v.lower(), k) for (k, v) in log.level_names.items()])
+	log_level_lookup = dict([(k.lower(), v) for (k, v) in logging._levelNames.items() if type(k) == str])
 
 	argparser = ArgumentParser()
 
@@ -64,21 +65,25 @@ def parse_arguments():
 
 
 def start_spider(args):
-	log.start(loglevel=args.log_level)
+	#log.start(loglevel=args.log_level)
 
-	spider = ImageSpider(domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
+	'''spider = ImageSpider(domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
 				monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
 				images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
-				no_cdns=args.no_cdns, auto_throttle=args.auto_throttle)
+				no_cdns=args.no_cdns, auto_throttle=args.auto_throttle)'''
 
 	project_settings = Settings()
 	project_settings.setmodule(settings)
-	crawler = Crawler(project_settings)
+	crawler = Crawler(ImageSpider, project_settings)
 	crawler.signals.connect(reactor.stop, signal=signals.spider_closed)
-	crawler.configure()
-	crawler.crawl(spider)
-	crawler.start()
+	#crawler.configure()
+	#crawler.crawl(spider)
+	crawler.crawl(domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
+			monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
+			images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
+			no_cdns=args.no_cdns, auto_throttle=args.auto_throttle)
 
+	#crawler.start()
 	reactor.run()
 
 

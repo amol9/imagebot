@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
 import os
 from os.path import join as joinpath, exists
 import pickle
 import sys
-from scrapy import log, Request
+from scrapy import Request
 from time import time, sleep
-from scrapy.contrib.pipeline.images import ImagesPipeline
+from scrapy.pipelines.images import ImagesPipeline
+import logging as log
 
 from imagebot.items import ImageItem
 from imagebot.settings import settings
@@ -26,10 +26,10 @@ class ImageStorePipeline(object):
 			self._dbm = DBManager(settings.IMAGES_DB)
 			self._dbm.connect()
 			self._nodb = False
-			log.msg('opened db: %s'%settings.IMAGES_DB, log.INFO)
+			log.debug('opened db: %s'%settings.IMAGES_DB)
 		else:
 			self._nodb = True
-			log.msg('could not open db: %s'%settings.IMAGES_DB, log.INFO)
+			log.debug('could not open db: %s'%settings.IMAGES_DB)
 
 
 	def process_item(self, item, spider):
@@ -44,18 +44,18 @@ class ImageStorePipeline(object):
 					final_path = joinpath(final_storepath, filebasename + '.' + ext)
 					i = 0
 					while exists(final_path):
-						log.msg(final_path + ' exists', log.DEBUG)
+						log.debug(final_path + ' exists')
 						final_path = joinpath(final_storepath, filebasename + '_%02d'%i + '.' + ext)
 						i += 1
 
 					try:
 						os.rename(joinpath(settings.IMAGES_STORE, d['path']), final_path)
-						log.msg('moved to: ' + final_path, log.DEBUG)
+						log.debug('moved to: ' + final_path)
 						spider.update_monitor(final_path)
 						if not self._nodb:
 							self._dbm.insert('images', (d['url'], final_path, spider.jobname, int(time())))
 					except OSError as e:
-						log.msg(e.message, log.ERROR)
+						log.error(e.message)
 
 
 		if not self._nodb:
