@@ -55,7 +55,7 @@ class ImageStorePipeline(object):
 						if not self._nodb:
 							self._dbm.insert('images', (d['url'], final_path, spider.jobname, int(time())))
 					except OSError as e:
-						log.error(e.message)
+						log.error(e)
 
 
 		if not self._nodb:

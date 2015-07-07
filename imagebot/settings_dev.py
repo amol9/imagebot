@@ -1,13 +1,14 @@
-from os.path import join as joinpath
+from os.path import join as joinpath, expanduser
 import logging
 
 BOT_NAME = 'imagebot'
 DATA_DIR = '.imagebot'
+HOME_DIR = expanduser('~')
 
 SPIDER_MODULES = ['imagebot.spiders']
 NEWSPIDER_MODULE = 'imagebot.spiders'
 
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
+#crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'imagebot'
 
 ITEM_PIPELINES = {
@@ -15,9 +16,9 @@ ITEM_PIPELINES = {
 	'imagebot.pipelines.ImageStorePipeline': 2
 }
 
-IMAGES_STORE = joinpath('~', DATA_DIR, 'data')
-IMAGES_STORE_FINAL = '~/Pictures/crawled'
-IMAGES_DB = joinpath('~', DATA_DIR, 'images.db')
+IMAGES_STORE = joinpath(HOME_DIR, DATA_DIR, 'data')
+IMAGES_STORE_FINAL = joinpath(HOME_DIR, 'Pictures/crawled')
+IMAGES_DB = joinpath(HOME_DIR, DATA_DIR, 'images.db')
 
 IMAGES_MIN_HEIGHT = 300
 IMAGES_MIN_WIDTH = 300
@@ -32,7 +33,7 @@ LOG_LEVEL = logging.DEBUG
 
 HTTPCACHE_ENABLED = True
 HTTPCACHE_POLICY = 'scrapy.extensions.httpcache.RFC2616Policy'
-HTTPCACHE_DIR = joinpath('~', DATA_DIR, 'httpcache')
+HTTPCACHE_DIR = joinpath(HOME_DIR, DATA_DIR, 'httpcache')
 
 DEPTH_LIMIT = 0
 

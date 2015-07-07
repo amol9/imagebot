@@ -1,5 +1,5 @@
 from twisted.internet import reactor
-from scrapy.crawler import Crawler
+from scrapy.crawler import Crawler, CrawlerProcess
 from scrapy import signals
 from scrapy.utils.project import get_project_settings
 from scrapy.settings import Settings
@@ -78,13 +78,16 @@ def start_spider(args):
 	crawler.signals.connect(reactor.stop, signal=signals.spider_closed)
 	#crawler.configure()
 	#crawler.crawl(spider)
-	crawler.crawl(domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
+	process = CrawlerProcess(project_settings)
+	
+	process.crawl(ImageSpider, domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
 			monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
 			images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
 			no_cdns=args.no_cdns, auto_throttle=args.auto_throttle)
 
 	#crawler.start()
-	reactor.run()
+	#reactor.run()
+	process.start()
 
 
 def clear(args):

@@ -35,7 +35,8 @@ class ImageStoreMiddleware(object):
 
 
 	def __del__(self):
-		self._db.disconnect()	
+		#self._db.disconnect()
+		pass
 
 
 class DebugMiddleware(object):
