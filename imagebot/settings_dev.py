@@ -1,6 +1,7 @@
 from os.path import join as joinpath, expanduser
 import logging
 
+
 BOT_NAME = 'imagebot'
 DATA_DIR = '.imagebot'
 HOME_DIR = expanduser('~')

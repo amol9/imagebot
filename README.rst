@@ -2,19 +2,19 @@
 imagebot
 ========
 
-This bot crawls a given website or url(s) and downloads all the images.
+This bot (image scraper) crawls a given url(s) and downloads all the images.
 
 Features
 ========
 
 * Supported platforms: Linux / Windows / Python 2.7.
-* Uses scrapy web crawling framework.
 * Maintains a database of all downloaded images to avoid duplicate downloads.
 * Optionally, it can scrape only under a particular url, e.g. scraping *\http://website.com/albums/new* with this option will only download from new album.
-* Can filter urls by regex.
-* Can filter images by minimum size.
+* Filters urls by regex.
+* Filters images by minimum size.
 * Scrapes through javascript popup links (limited support).
 * Live monitor window for displaying images as they are scraped.
+* Asynchronous i/o design using scrapy and twisted.
 
 Usage
 =====
@@ -60,7 +60,7 @@ Usage
 
 	*-a, --user-agent*
 
-	Set user-agent string. Default: imagebot. It is recommended to change it to yidentify your bot as a matter of responsible crawling.
+	Set user-agent string. Default: imagebot. It is recommended to change it to identify your bot as a matter of responsible crawling.
 
 	``imagebot crawl http://website.com -a "my_imagebot(http://mysite.com)"``
 
@@ -153,4 +153,4 @@ Download
 ========
 
 * PyPI: http://pypi.python.org/pypi/imagebot/
-* Source: https://github.com/amol9/imagebot/ [Use git clone flag "--recursive" to pull submodule sources as well.]
+* Source: https://github.com/amol9/imagebot/
