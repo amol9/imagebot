@@ -50,9 +50,6 @@ def parse_arguments():
 
 	args = argparser.parse_args()
 
-	#if args.version:
-		#return args, 'version'
-
 	if args.subcommand == 'clear':
 		return args, 'clear'
 
@@ -65,28 +62,17 @@ def parse_arguments():
 
 
 def start_spider(args):
-	#log.start(loglevel=args.log_level)
-
-	'''spider = ImageSpider(domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
-				monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
-				images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
-				no_cdns=args.no_cdns, auto_throttle=args.auto_throttle)'''
-
+	settings.LOG_LEVEL = args.log_level
 	project_settings = Settings()
 	project_settings.setmodule(settings)
-	crawler = Crawler(ImageSpider, project_settings)
-	crawler.signals.connect(reactor.stop, signal=signals.spider_closed)
-	#crawler.configure()
-	#crawler.crawl(spider)
+	
 	process = CrawlerProcess(project_settings)
 	
 	process.crawl(ImageSpider, domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
 			monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
 			images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
-			no_cdns=args.no_cdns, auto_throttle=args.auto_throttle)
+			no_cdns=args.no_cdns, auto_throttle=args.auto_throttle, log_level=args.log_level)
 
-	#crawler.start()
-	#reactor.run()
 	process.start()
 
 

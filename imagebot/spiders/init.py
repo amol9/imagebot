@@ -108,6 +108,8 @@ def process_kwargs(bot, kwargs):
 	if kwargs['auto_throttle']:
 		settings.AUTOTHROTTLE_ENABLED = True
 
+	settings.LOG_LEVEL = kwargs['log_level']
+
 	Image.init()
 	bot.image_extensions = Image.EXTENSION.keys()
 	
