@@ -7,7 +7,7 @@ This bot (image scraper) crawls a given url(s) and downloads all the images.
 Features
 ========
 
-* Supported platforms: Linux / Windows / Python 2.7.
+* Supported platforms: Linux / Windows / Python 2.7 / Python 3.8.
 * Maintains a database of all downloaded images to avoid duplicate downloads.
 * Optionally, it can scrape only under a particular url, e.g. scraping *\http://website.com/albums/new* with this option will only download from new album.
 * Filters urls by regex.
@@ -26,7 +26,7 @@ Usage
 	imagebot crawl http://website.com
 	imagebot crawl http://website.com,http://otherwebsite.com
 
-* Options for crawl command:
+* Options for crawl command::
 
 	*-d, --domains*
 
@@ -107,7 +107,7 @@ Usage
 
 * This command is useful for various kinds of cleanup.
 
-* Options for clear command:	
+* Options for clear command::	
 
 	*--cache*
 
@@ -134,20 +134,20 @@ Dependencies
 
 #. pywin32 (http://sourceforge.net/projects/pywin32/)
 
-	Needed on Windows.
+Needed on Windows.
 
 #. python-gi (Python GObject Introspection API)
 
-	Needed on Linux for gtk UI. (Optional). If not found, python built-in Tkinter will be used.
-	On Ubuntu: ``apt-get install python-gi``
+Needed on Linux for gtk UI. (Optional). If not found, python built-in Tkinter will be used.
+On Ubuntu: ``apt-get install python-gi``
 
 #. scrapy (web crawling framework)
 
-	It will be automatically installed by pip.
+It will be automatically installed by pip.
 
 #. Pillow (Python Imaging Library)
 
-	It will be automatically installed by pip.
+It will be automatically installed by pip.
 
 Download
 ========
