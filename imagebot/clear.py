@@ -25,7 +25,7 @@ def remove_dir_contents(dirpath):
 			for f in files:
 				remove(joinpath(root, f))
 	except OSError as ose:
-		print ose.message
+		print(ose.message)
 	else:
 		print('done')
 
@@ -80,7 +80,7 @@ def clear_duplicate_images(arg):
 	imagepath = result[0]['path']
 	jobpath = imagepath[0:imagepath.rfind(jobname)+len(jobname)]
 
-	print jobpath
+	print(jobpath)
 
 	filelist = []
 	for root, dirs, files in os.walk(jobpath):

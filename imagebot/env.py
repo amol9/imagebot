@@ -1,1 +1,1 @@
-env = 'dev'
+env = 'release'

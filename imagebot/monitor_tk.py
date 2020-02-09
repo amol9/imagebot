@@ -1,5 +1,11 @@
-from Tkinter import Tk, Label, Frame
 from PIL import Image, ImageTk
+
+from imagebot import pysix
+
+if pysix.ver < 3:
+	from Tkinter import Tk, Label, Frame
+else:
+	from tkinter import Tk, Label, Frame
 
 
 class AppWindow(Frame):

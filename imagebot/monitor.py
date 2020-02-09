@@ -1,6 +1,8 @@
 import logging as log
 import imp
 
+from imagebot import pysix
+
 
 class MonitorException(Exception):
 	pass
@@ -23,13 +25,13 @@ def get_monitor():
 		imp.find_module('gi')
 		return start_gtk_monitor
 	except ImportError as e:
-		log.error(e.message)
+		log.error(pysix.err_msg(e))
 
 	try:
-		imp.find_module('Tkinter')
+		imp.find_module(pysix.tkinter)
 		return start_tk_monitor
 	except ImportError as e:
-		log.error(e.message)
+		log.error(pysix.err_msg(e))
 		
 	raise MonitorException()
 

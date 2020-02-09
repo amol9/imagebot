@@ -11,9 +11,11 @@ from imagebot.settings import settings
 from imagebot.clear import clear_cache, clear_db, clear_duplicate_images
 from imagebot.version import version
 
+from imagebot import pysix
+
 
 def parse_arguments():
-	log_level_lookup = dict([(k.lower(), v) for (k, v) in logging._levelNames.items() if type(k) == str])
+	log_level_lookup = dict([(k.lower(), v) for (k, v) in pysix._logLevelNames.items() if type(k) == str])
 
 	argparser = ArgumentParser()
 
