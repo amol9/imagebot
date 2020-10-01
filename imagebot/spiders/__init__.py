@@ -2,3 +2,4 @@
 #
 # Please refer to the documentation for information on how to create and manage
 # your spiders.
+#This package will make you master in your spiders.
