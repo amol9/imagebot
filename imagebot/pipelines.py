@@ -1,5 +1,6 @@
 import os
 from os.path import join as joinpath, exists
+import shutil
 import pickle
 import sys
 from scrapy import Request
@@ -22,6 +23,7 @@ class ImagesRefererPipeline(ImagesPipeline):
 
 class ImageStorePipeline(object):
 	def __init__(self):
+		self.move = os.rename if os.stat(settings.IMAGES_STORE_FINAL).st_dev == os.stat(settings.IMAGES_STORE).st_dev else shutil.move
 		if exists(settings.IMAGES_DB):
 			self._dbm = DBManager(settings.IMAGES_DB)
 			self._dbm.connect()
@@ -49,7 +51,7 @@ class ImageStorePipeline(object):
 						i += 1
 
 					try:
-						os.rename(joinpath(settings.IMAGES_STORE, d['path']), final_path)
+						self.move(joinpath(settings.IMAGES_STORE, d['path']), final_path)
 						log.debug('moved to: ' + final_path)
 						spider.update_monitor(final_path)
 						if not self._nodb:
