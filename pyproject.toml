@@ -9,7 +9,6 @@ python = "^3.9"
 Pillow = "^9.1.0"
 Scrapy = "^2.6.1"
 mutils = "^1.0.5"
-pylint = "^2.13.5"
 
 [tool.poetry.dev-dependencies]
 
