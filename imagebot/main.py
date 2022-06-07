@@ -1,10 +1,12 @@
-from twisted.internet import reactor
-from scrapy.crawler import Crawler, CrawlerProcess
-from scrapy import signals
-from scrapy.utils.project import get_project_settings
+#!/bin/env python3
+from twisted.internet import reactor, defer
+from scrapy.crawler import CrawlerProcess, CrawlerRunner
+# from scrapy import signals
+# from scrapy.utils.project import get_project_settings
+from scrapy.utils.log import configure_logging
 from scrapy.settings import Settings
 from argparse import ArgumentParser
-import logging
+# import logging
 
 from imagebot.spiders.bot import ImageSpider
 from imagebot.settings import settings
@@ -12,6 +14,9 @@ from imagebot.clear import clear_cache, clear_db, clear_duplicate_images
 from imagebot.version import version
 
 from imagebot import pysix
+
+
+configure_logging({'LOG_FORMAT': '%(levelname)s: %(message)s'})
 
 
 def parse_arguments():
@@ -68,15 +73,18 @@ def start_spider(args):
 	project_settings = Settings()
 	project_settings.setmodule(settings)
 	
-	process = CrawlerProcess(project_settings)
+	runner = CrawlerRunner(settings=project_settings)
 	
-	process.crawl(ImageSpider, domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
+	@defer.inlineCallbacks
+	def crawl():
+		yield runner.crawl(ImageSpider, domains=args.domains, start_urls=args.start_urls, jobname=args.jobname, stay_under=args.stay_under,
 			monitor=args.monitor, user_agent=args.user_agent, minsize=args.min_size, no_cache=args.no_cache,
 			images_store=args.images_store, depth_limit=args.depth_limit, url_regex=args.url_regex,
 			no_cdns=args.no_cdns, auto_throttle=args.auto_throttle, log_level=args.log_level)
+		reactor.stop()
 
-	process.start()
-
+	crawl()
+	reactor.run()
 
 def clear(args):
 	if args.clear_cache:
